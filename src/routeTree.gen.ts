@@ -9,48 +9,161 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as CcRouteImport } from './routes/cc'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppRouteRouteImport } from './routes/app/route'
+import { Route as PathlessLayoutRouteRouteImport } from './routes/_pathlessLayout/route'
+import { Route as AppDashboardRouteImport } from './routes/app/dashboard'
+import { Route as PathlessLayoutARouteImport } from './routes/_pathlessLayout/a'
+import { Route as AppUsersUserIdRouteRouteImport } from './routes/app/users/$userId/route'
+import { Route as AppUsersUserIdIndexRouteImport } from './routes/app/users/$userId/index'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CcRoute = CcRouteImport.update({
+  id: '/cc',
+  path: '/cc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRouteRoute = AppRouteRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PathlessLayoutRouteRoute = PathlessLayoutRouteRouteImport.update({
+  id: '/_pathlessLayout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const PathlessLayoutARoute = PathlessLayoutARouteImport.update({
+  id: '/a',
+  path: '/a',
+  getParentRoute: () => PathlessLayoutRouteRoute,
+} as any)
+const AppUsersUserIdRouteRoute = AppUsersUserIdRouteRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppUsersUserIdIndexRoute = AppUsersUserIdIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppUsersUserIdRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthRoute
+  '/app': typeof AppRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/cc': typeof CcRoute
+  '/login': typeof LoginRoute
+  '/a': typeof PathlessLayoutARoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/users/$userId': typeof AppUsersUserIdRouteRouteWithChildren
+  '/app/users/$userId/': typeof AppUsersUserIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof AuthRoute
+  '/app': typeof AppRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/cc': typeof CcRoute
+  '/login': typeof LoginRoute
+  '/a': typeof PathlessLayoutARoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/users/$userId': typeof AppUsersUserIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_pathlessLayout': typeof PathlessLayoutRouteRouteWithChildren
+  '/app': typeof AppRouteRouteWithChildren
+  '/_auth': typeof AuthRoute
   '/about': typeof AboutRoute
+  '/cc': typeof CcRoute
+  '/login': typeof LoginRoute
+  '/_pathlessLayout/a': typeof PathlessLayoutARoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/users/$userId': typeof AppUsersUserIdRouteRouteWithChildren
+  '/app/users/$userId/': typeof AppUsersUserIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/about'
+    | '/cc'
+    | '/login'
+    | '/a'
+    | '/app/dashboard'
+    | '/app/users/$userId'
+    | '/app/users/$userId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to:
+    | '/'
+    | '/app'
+    | '/about'
+    | '/cc'
+    | '/login'
+    | '/a'
+    | '/app/dashboard'
+    | '/app/users/$userId'
+  id:
+    | '__root__'
+    | '/_pathlessLayout'
+    | '/app'
+    | '/_auth'
+    | '/about'
+    | '/cc'
+    | '/login'
+    | '/_pathlessLayout/a'
+    | '/app/dashboard'
+    | '/app/users/$userId'
+    | '/app/users/$userId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  PathlessLayoutRouteRoute: typeof PathlessLayoutRouteRouteWithChildren
+  AppRouteRoute: typeof AppRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   AboutRoute: typeof AboutRoute
+  CcRoute: typeof CcRoute
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cc': {
+      id: '/cc'
+      path: '/cc'
+      fullPath: '/cc'
+      preLoaderRoute: typeof CcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -58,19 +171,101 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
+    '/_auth': {
+      id: '/_auth'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_pathlessLayout': {
+      id: '/_pathlessLayout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PathlessLayoutRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_pathlessLayout/a': {
+      id: '/_pathlessLayout/a'
+      path: '/a'
+      fullPath: '/a'
+      preLoaderRoute: typeof PathlessLayoutARouteImport
+      parentRoute: typeof PathlessLayoutRouteRoute
+    }
+    '/app/users/$userId': {
+      id: '/app/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/app/users/$userId'
+      preLoaderRoute: typeof AppUsersUserIdRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/users/$userId/': {
+      id: '/app/users/$userId/'
+      path: '/'
+      fullPath: '/app/users/$userId/'
+      preLoaderRoute: typeof AppUsersUserIdIndexRouteImport
+      parentRoute: typeof AppUsersUserIdRouteRoute
     }
   }
 }
 
+interface PathlessLayoutRouteRouteChildren {
+  PathlessLayoutARoute: typeof PathlessLayoutARoute
+}
+
+const PathlessLayoutRouteRouteChildren: PathlessLayoutRouteRouteChildren = {
+  PathlessLayoutARoute: PathlessLayoutARoute,
+}
+
+const PathlessLayoutRouteRouteWithChildren =
+  PathlessLayoutRouteRoute._addFileChildren(PathlessLayoutRouteRouteChildren)
+
+interface AppUsersUserIdRouteRouteChildren {
+  AppUsersUserIdIndexRoute: typeof AppUsersUserIdIndexRoute
+}
+
+const AppUsersUserIdRouteRouteChildren: AppUsersUserIdRouteRouteChildren = {
+  AppUsersUserIdIndexRoute: AppUsersUserIdIndexRoute,
+}
+
+const AppUsersUserIdRouteRouteWithChildren =
+  AppUsersUserIdRouteRoute._addFileChildren(AppUsersUserIdRouteRouteChildren)
+
+interface AppRouteRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppUsersUserIdRouteRoute: typeof AppUsersUserIdRouteRouteWithChildren
+}
+
+const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppDashboardRoute: AppDashboardRoute,
+  AppUsersUserIdRouteRoute: AppUsersUserIdRouteRouteWithChildren,
+}
+
+const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
+  AppRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  PathlessLayoutRouteRoute: PathlessLayoutRouteRouteWithChildren,
+  AppRouteRoute: AppRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   AboutRoute: AboutRoute,
+  CcRoute: CcRoute,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
