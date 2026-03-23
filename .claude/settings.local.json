@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/yunzhanghu_bj615/learn-tanstack -type f -name *.ts -o -name *.tsx -o -name *.json -o -name *.css)"
+    ]
+  }
+}
