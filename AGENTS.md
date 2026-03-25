@@ -29,15 +29,15 @@ Use `pnpm` as the package manager (required version: 10.28.2+).
 File-based routing using TanStack Router. Routes are defined in `src/routes/`:
 
 - `__root.tsx` - Root route with HTML shell, includes `Header`, `Footer`, devtools
-- `_auth.tsx` - Authenticated route layout with `beforeLoad` protection
-- `app/route.tsx` - Layout route for `/app` prefix
-- `app/users/$userId/` - Dynamic parameter routes
+- `_auth/route.tsx` - Authenticated layout route with `beforeLoad` protection
+- `_auth/app/route.tsx` - Layout route for `/app` prefix under auth
+- `_auth/app/users/$userId/` - Dynamic parameter routes under auth
 
 Key routing patterns:
 - Use `createFileRoute()` to define routes
-- `beforeLoad` for route-level guards (e.g., auth checks in `_auth.tsx`)
+- Use `beforeLoad` in `_auth/route.tsx` to guard all nested authenticated routes
 - Layout routes export a component that renders `<Outlet />` for nested routes
-- Pathless layouts use underscore prefix: `_pathlessLayout/`
+- Pathless/layout grouping routes use underscore prefixes (for example `_auth/`, `_pathlessLayout/`)
 
 ### Authentication
 
