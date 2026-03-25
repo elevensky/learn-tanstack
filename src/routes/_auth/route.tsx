@@ -1,7 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Link, Outlet, redirect, useRouter } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 
-import { useAuth } from "../auth";
+import { useAuth } from "../../auth";
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: ({ context, location }) => {
@@ -24,7 +23,7 @@ function AuthLayout() {
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
-      auth?.logout().then(() => {
+      auth.logout().then(() => {
         router.invalidate().finally(() => {
           navigate({ to: "/" });
         });
@@ -39,10 +38,19 @@ function AuthLayout() {
       <ul className="py-2 flex gap-2">
         <li>
           <Link
-            to="/app"
+            to="/app/dashboard"
             className="hover:underline data-[status='active']:font-semibold"
           >
             Dashboard
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/app/users/$userId"
+            params={{ userId: "demo-user" }}
+            className="hover:underline data-[status='active']:font-semibold"
+          >
+            User
           </Link>
         </li>
         <li>

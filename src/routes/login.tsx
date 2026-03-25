@@ -7,12 +7,15 @@ import { useAuth } from "../auth";
 import { sleep } from "../utils";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-const fallback = "/dashboard" as const;
+const fallback = "/app/dashboard" as const;
 
 export const Route = createFileRoute("/login")({
-  // validateSearch: z.object({
-  //   redirect: z.string().optional().catch(''),
-  // }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect:
+      typeof search.redirect === "string" && search.redirect.length > 0
+        ? search.redirect
+        : undefined,
+  }),
   beforeLoad: ({ context, search }) => {
     if (context.auth.isAuthenticated) {
       throw redirect({ to: search.redirect || fallback });
@@ -47,7 +50,12 @@ function LoginComponent() {
       // in a real app, you'd want to use a more robust solution
       await sleep(1);
 
-      await navigate({ to: search.redirect || fallback });
+      if (search.redirect) {
+        window.location.href = search.redirect;
+        return;
+      }
+
+      await navigate({ to: fallback });
     } catch (error) {
       console.error("Error logging in: ", error);
     } finally {

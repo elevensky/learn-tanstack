@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { Link, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: ({ context }) => {
+    if (context.auth.isAuthenticated) {
+      throw redirect({
+        to: "/app/dashboard",
+      });
+    }
+  },
   component: HomeComponent,
 });
 
@@ -26,18 +33,26 @@ function HomeComponent() {
       <p>You can try going through these options.</p>
       <ol className="list-disc list-inside px-2">
         <li>
-          <Link to="/login" className="text-blue-500 hover:opacity-75">
+          <Link
+            to="/login"
+            search={{ redirect: undefined }}
+            className="text-blue-500 hover:opacity-75"
+          >
             Go to the public login page.
           </Link>
         </li>
         <li>
-          <Link to="/dashboard" className="text-blue-500 hover:opacity-75">
+          <Link to="/app/dashboard" className="text-blue-500 hover:opacity-75">
             Go to the auth-only dashboard page.
           </Link>
         </li>
         <li>
-          <Link to="/invoices" className="text-blue-500 hover:opacity-75">
-            Go to the auth-only invoices page.
+          <Link
+            to="/app/users/$userId"
+            params={{ userId: "demo-user" }}
+            className="text-blue-500 hover:opacity-75"
+          >
+            Go to the auth-only user page.
           </Link>
         </li>
       </ol>

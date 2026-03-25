@@ -10,6 +10,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import NotFound from "../components/NotFound";
+import type { AuthContext } from "../auth";
 
 import appCss from "../styles.css?url";
 
@@ -17,6 +18,7 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
+  auth: AuthContext;
 }>()({
   head: () => ({
     meta: [
@@ -58,10 +60,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             position: "bottom-right",
           }}
           plugins={[
-            {
-              name: "TanStack Query",
-              render: <ReactQueryDevtoolsPanel />,
-            },
+            { name: "TanStack Query", render: <ReactQueryDevtoolsPanel /> },
             {
               name: "Tanstack Router",
               render: <TanStackRouterDevtoolsPanel />,

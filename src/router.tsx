@@ -5,13 +5,13 @@ import {
 } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
-import { AuthProvider, useAuth } from "./auth";
+import { AuthProvider, defaultAuthContext, useAuth } from "./auth";
 
 const queryClient = new QueryClient();
 
 const router = createTanStackRouter({
   routeTree,
-  context: { queryClient },
+  context: { queryClient, auth: defaultAuthContext },
   scrollRestoration: true,
   defaultPreload: "intent",
   defaultPreloadStaleTime: 0,
@@ -25,13 +25,19 @@ declare module "@tanstack/react-router" {
 
 function InnerApp() {
   const auth = useAuth();
-  return <RouterProvider router={router} context={{ auth }} />;
+  return <RouterProvider router={router} context={{ queryClient, auth }} />;
 }
 
-function App() {
+export async function getRouter() {
+  return router;
+}
+
+export function App() {
   return (
     <AuthProvider>
       <InnerApp />
     </AuthProvider>
   );
 }
+
+export default App;
