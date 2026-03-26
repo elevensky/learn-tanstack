@@ -4,7 +4,7 @@ This file provides guidance to OpenAI-based code assistants (e.g., ChatGPT, GPT 
 
 ## Project Overview
 
-This is a TanStack Start application - a full-stack React framework combining TanStack Router, TanStack Query, and Vite. It demonstrates authentication, route protection, and file-based routing patterns.
+This is a client-only React application built with Vite, TanStack Router, and TanStack Query. It demonstrates authentication, route protection, and file-based routing patterns.
 
 ## Commands
 
@@ -42,7 +42,7 @@ Key routing patterns:
 ### Authentication
 
 Auth context in `src/auth.tsx`:
-- `AuthProvider` wraps the app in `src/router.tsx`
+- `AuthProvider` wraps the app in `src/main.tsx`
 - Auth state passed to router via context
 - Access in routes via `context.auth`
 - `useAuth()` hook for component access
