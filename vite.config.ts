@@ -15,23 +15,19 @@ const config = defineConfig({
     devtools(),
     tanstackRouter(),
     tailwindcss(),
-    viteReact({
-      babel: {
-        plugins: [
-          [
-            "import",
-            {
-              libraryName: "antd",
-              libraryDirectory: "es",
-              // Import component styles on demand instead of global CSS reset.
-              style: true,
-            },
-            "antd",
-          ],
-        ],
-      },
-    }),
+    viteReact(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("/node_modules/antd/")) {
+            return "antd";
+          }
+        },
+      },
+    },
+  },
 })
 
 export default config

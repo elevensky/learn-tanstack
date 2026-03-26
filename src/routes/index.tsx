@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link, redirect } from "@tanstack/react-router";
-import { Button } from "antd";
+import Button from "antd/es/button";
 
 export const Route = createFileRoute("/")({
   beforeLoad: ({ context }) => {
