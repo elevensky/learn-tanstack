@@ -15,7 +15,22 @@ const config = defineConfig({
     devtools(),
     tanstackRouter(),
     tailwindcss(),
-    viteReact(),
+    viteReact({
+      babel: {
+        plugins: [
+          [
+            "import",
+            {
+              libraryName: "antd",
+              libraryDirectory: "es",
+              // Import component styles on demand instead of global CSS reset.
+              style: true,
+            },
+            "antd",
+          ],
+        ],
+      },
+    }),
   ],
 })
 

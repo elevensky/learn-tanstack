@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link, redirect } from "@tanstack/react-router";
+import { Button } from "antd";
 
 export const Route = createFileRoute("/")({
   beforeLoad: ({ context }) => {
@@ -15,7 +16,9 @@ export const Route = createFileRoute("/")({
 function HomeComponent() {
   return (
     <div className="p-2 grid gap-2">
-      <h1 className="text-xl">Welcome!</h1>
+      <h1 className="text-xl">
+        Welcome! <Button type="primary">Click me</Button>
+      </h1>
       <p className="py-4 px-2 italic bg-slate-100 dark:bg-slate-800">
         <strong className="text-red-500">IMPORTANT!!!</strong> This is just an
         example of how to use authenticated routes with TanStack Router.
