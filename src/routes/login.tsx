@@ -1,16 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { redirect, useRouter, useRouterState } from "@tanstack/react-router";
-import {
-  Alert,
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  Spin,
-  Typography,
-  message,
-} from "antd";
+import { Button, Checkbox, Form, Input, Spin, Typography, message } from "antd";
 
 import { useAuth } from "../auth";
 import { http } from "../lib/http";
@@ -18,14 +9,11 @@ import { sleep } from "../utils";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 const fallback = "/app/dashboard" as const;
-const CAPTCHA_API = "/api/captcha";
+const CAPTCHA_API = "auth/captcha/img";
 
 type CaptchaResponse = {
-  captchaId?: string;
   id?: string;
-  imageBase64?: string;
-  base64?: string;
-  image?: string;
+  img?: string;
 };
 
 function normalizeCaptchaImage(rawBase64: string) {
@@ -37,9 +25,9 @@ function normalizeCaptchaImage(rawBase64: string) {
 }
 
 async function fetchCaptcha() {
-  const data = await http.get(CAPTCHA_API).json<CaptchaResponse>();
-  const captchaId = data.captchaId ?? data.id ?? "";
-  const imageBase64 = data.imageBase64 ?? data.base64 ?? data.image ?? "";
+  const data = await http.get<CaptchaResponse>(CAPTCHA_API);
+  const captchaId = data.id ?? "";
+  const imageBase64 = data.img ?? "";
   if (!imageBase64) {
     throw new Error("Captcha image base64 is empty");
   }
@@ -188,16 +176,6 @@ function LoginComponent() {
             <Typography.Text type="secondary">请输入账号信息</Typography.Text>
           </div>
 
-          {search.redirect ? (
-            <Alert
-              type="warning"
-              showIcon
-              message="需要登录后才能访问目标页面"
-              description="登录成功后将自动跳转到你原本想访问的地址。"
-              style={{ marginBottom: 12 }}
-            />
-          ) : null}
-
           <Form
             form={form}
             layout="horizontal"
@@ -243,7 +221,13 @@ function LoginComponent() {
                   maxLength={8}
                   style={{ width: 130 }}
                 />
-                <div className="h-8 w-[100px] rounded border border-[#d1d5db] bg-white px-2 grid place-items-center">
+                <button
+                  type="button"
+                  onClick={() => void reloadCaptcha()}
+                  disabled={isLoggingIn || isCaptchaLoading}
+                  title="点击刷新验证码"
+                  className="h-8 w-[100px] rounded border border-[#d1d5db] bg-white px-2 grid place-items-center disabled:cursor-not-allowed"
+                >
                   {isCaptchaLoading ? (
                     <Spin size="small" />
                   ) : captchaImageSrc ? (
@@ -257,16 +241,7 @@ function LoginComponent() {
                       {captchaLoadError || "加载失败"}
                     </Typography.Text>
                   )}
-                </div>
-                <Button
-                  type="link"
-                  size="small"
-                  onClick={() => void reloadCaptcha()}
-                  disabled={isLoggingIn}
-                  style={{ paddingInline: 0 }}
-                >
-                  刷新
-                </Button>
+                </button>
               </div>
             </Form.Item>
 

@@ -33,6 +33,14 @@ const config = defineConfig(({ mode }) => ({
       },
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:7001",
+        changeOrigin: true,
+      },
+    },
+  },
 }))
 
 export default config

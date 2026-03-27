@@ -62,8 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem("auth-token");
     if (token) {
       http
-        .get("/api/validate-token")
-        .json<{ valid: boolean; user: string }>()
+        .get<{ valid: boolean; user: string }>("validate-token")
         .then((userData) => {
           if (userData.valid) {
             setUser(userData.user);

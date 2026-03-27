@@ -70,6 +70,9 @@ HTTP requests are standardized on `ky` via `src/lib/http.ts`.
 
 - Use the shared `http` instance instead of calling `fetch` directly in routes/components
 - Built-in behaviors in the shared client:
+  - `prefixUrl` is `api`; request paths should NOT include leading `/` or `/api` prefix
+  - backend response envelope is `{ code, data, message }`
+  - `http` methods return `data` by default; pass `{ origin: true }` to receive full envelope
   - timeout (`10000ms`)
   - retry policy for transient errors
   - `Authorization` header injection from `localStorage.auth-token`
@@ -78,7 +81,8 @@ HTTP requests are standardized on `ky` via `src/lib/http.ts`.
 ```tsx
 import { http } from '#/lib/http'
 
-const data = await http.get('/api/example').json<YourResponse>()
+const data = await http.get<YourResponse>('example')
+const raw = await http.get<YourResponse>('example', { origin: true })
 ```
 
 ## Generated Files
