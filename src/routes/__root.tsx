@@ -6,8 +6,6 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import Footer from "../components/Footer";
-import Header from "../components/Header";
 import NotFound from "../components/NotFound";
 import type { AuthContext } from "../auth";
 
@@ -38,9 +36,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <>
       <HeadContent />
       <div className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
-        <Header />
         {children}
-        <Footer />
         <TanStackDevtools
           config={{
             position: "bottom-right",

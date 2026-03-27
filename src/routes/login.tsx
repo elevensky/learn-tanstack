@@ -4,9 +4,7 @@ import { redirect, useRouter, useRouterState } from "@tanstack/react-router";
 import {
   Alert,
   Button,
-  Card,
   Checkbox,
-  Divider,
   Form,
   Input,
   Spin,
@@ -154,42 +152,36 @@ function LoginComponent() {
   const isLoggingIn = isLoading || isSubmitting;
 
   return (
-    <div className="min-h-[calc(100vh-2rem)] grid place-items-center p-6 sm:p-10">
-      <div className="w-full max-w-[1000px] grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-stretch">
-        <section className="hidden lg:flex flex-col justify-center rounded-2xl p-8 island-shell rise-in">
+    <div className="min-h-[calc(100vh-2rem)] grid place-items-center px-6 py-8 sm:px-10">
+      <div className="w-full max-w-[1080px] grid gap-8 lg:grid-cols-[1fr_430px] items-center">
+        <section className="hidden lg:block rise-in">
           <Typography.Text className="island-kicker">
             TanStack Demo
           </Typography.Text>
           <Typography.Title
             level={2}
-            style={{ marginTop: 12, marginBottom: 12 }}
+            style={{ marginTop: 10, marginBottom: 10 }}
           >
-            企业级管理台登录体验
+            简洁的用户中心登录
           </Typography.Title>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
+            登录后进入 App Center，统一由 `/app`
+            布局渲染。页面聚焦输入效率，支持图文验证码刷新。
+          </Typography.Paragraph>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            基于 Ant Design Form
-            重构，采用独立登录布局，不继承站点公共头尾。输入用户名即可体验鉴权路由跳转。
+            适合后续扩展短信登录、第三方登录和多租户切换等能力。
           </Typography.Paragraph>
         </section>
 
-        <Card
-          className="rise-in"
-          style={{ borderRadius: 16 }}
-          styles={{
-            body: {
-              padding: 28,
-              display: "grid",
-              gap: 16,
-            },
-          }}
+        <section
+          className="rise-in rounded-xl border border-[#e5e7eb] bg-white p-5 sm:p-6"
+          style={{ boxShadow: "0 8px 24px rgba(15,23,42,0.06)" }}
         >
-          <div>
-            <Typography.Title level={3} style={{ marginBottom: 6 }}>
-              欢迎登录
+          <div className="mb-4">
+            <Typography.Title level={3} style={{ marginBottom: 4 }}>
+              登录
             </Typography.Title>
-            <Typography.Text type="secondary">
-              使用账号密码登录系统
-            </Typography.Text>
+            <Typography.Text type="secondary">请输入账号信息</Typography.Text>
           </div>
 
           {search.redirect ? (
@@ -198,17 +190,21 @@ function LoginComponent() {
               showIcon
               message="需要登录后才能访问目标页面"
               description="登录成功后将自动跳转到你原本想访问的地址。"
+              style={{ marginBottom: 12 }}
             />
           ) : null}
 
           <Form
             form={form}
-            layout="vertical"
+            layout="horizontal"
             initialValues={{ remember: true }}
             disabled={isLoggingIn || isCaptchaLoading}
             onFinish={onFormSubmit}
             requiredMark={false}
-            size="large"
+            size="middle"
+            labelCol={{ flex: "84px" }}
+            wrapperCol={{ flex: 1 }}
+            labelAlign="right"
           >
             <Form.Item
               name="username"
@@ -236,71 +232,58 @@ function LoginComponent() {
                 { min: 4, message: "验证码长度至少 4 位" },
               ]}
             >
-              <Input
-                placeholder="请输入验证码"
-                autoComplete="off"
-                maxLength={8}
-                addonAfter={
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={() => void reloadCaptcha()}
-                    disabled={isLoggingIn}
-                    style={{ paddingInline: 4 }}
-                  >
-                    刷新
-                  </Button>
-                }
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="请输入验证码"
+                  autoComplete="off"
+                  maxLength={8}
+                  style={{ width: 130 }}
+                />
+                <div className="h-8 w-[100px] rounded border border-[#d1d5db] bg-white px-2 grid place-items-center">
+                  {isCaptchaLoading ? (
+                    <Spin size="small" />
+                  ) : captchaImageSrc ? (
+                    <img
+                      src={captchaImageSrc}
+                      alt="图文验证码"
+                      className="h-6 w-auto object-contain select-none"
+                    />
+                  ) : (
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      {captchaLoadError || "加载失败"}
+                    </Typography.Text>
+                  )}
+                </div>
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => void reloadCaptcha()}
+                  disabled={isLoggingIn}
+                  style={{ paddingInline: 0 }}
+                >
+                  刷新
+                </Button>
+              </div>
             </Form.Item>
 
-            <div className="mb-5">
-              <div className="h-12 rounded-md border border-[var(--line)] bg-white/70 px-3 grid items-center">
-                {isCaptchaLoading ? (
-                  <Spin size="small" />
-                ) : captchaImageSrc ? (
-                  <img
-                    src={captchaImageSrc}
-                    alt="图文验证码"
-                    className="h-8 w-auto object-contain select-none"
-                  />
-                ) : (
-                  <Typography.Text type="secondary">
-                    {captchaLoadError || "暂无验证码"}
-                  </Typography.Text>
-                )}
+            <Form.Item label=" " colon={false} style={{ marginBottom: 10 }}>
+              <div className="flex items-center justify-between">
+                <Form.Item name="remember" valuePropName="checked" noStyle>
+                  <Checkbox>自动登录</Checkbox>
+                </Form.Item>
+                <Typography.Link href="#" onClick={(e) => e.preventDefault()}>
+                  忘记密码
+                </Typography.Link>
               </div>
-            </div>
+            </Form.Item>
 
-            <div className="flex items-center justify-between mb-5">
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>自动登录</Checkbox>
-              </Form.Item>
-              <Typography.Link href="#" onClick={(e) => e.preventDefault()}>
-                忘记密码
-              </Typography.Link>
-            </div>
-
-            <Form.Item style={{ marginBottom: 0 }}>
-              <Button
-                block
-                type="primary"
-                htmlType="submit"
-                loading={isLoggingIn}
-              >
+            <Form.Item label=" " colon={false} style={{ marginBottom: 0 }}>
+              <Button type="primary" htmlType="submit" loading={isLoggingIn} className="min-w-24">
                 登录
               </Button>
             </Form.Item>
           </Form>
-
-          <Divider style={{ margin: "4px 0 0" }} />
-          <Typography.Text type="secondary">
-            还没有账号？
-            <Typography.Link href="#" onClick={(e) => e.preventDefault()}>
-              立即注册
-            </Typography.Link>
-          </Typography.Text>
-        </Card>
+        </section>
       </div>
     </div>
   );
