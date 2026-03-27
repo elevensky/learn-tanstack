@@ -1,21 +1,26 @@
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-const config = defineConfig({
-  resolve: {
-    // Vite 8 supports tsconfig paths natively at runtime.
-    // @ts-expect-error pending type support in current tooling.
-    tsconfigPaths: true,
-  },
+const config = defineConfig(({ mode }) => ({
   plugins: [
     devtools(),
     tanstackRouter(),
+    tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
     viteReact(),
+    mode === 'analyze' &&
+      visualizer({
+        filename: 'dist/stats.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+      }),
   ],
   build: {
     rollupOptions: {
@@ -28,6 +33,6 @@ const config = defineConfig({
       },
     },
   },
-})
+}))
 
 export default config

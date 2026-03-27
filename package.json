@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "analyze": "vite build --mode analyze",
     "preview": "vite preview",
     "test": "vitest run"
   },
@@ -36,8 +37,10 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.0.1",
+    "rollup-plugin-visualizer": "^7.0.1",
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.2"
   },
   "pnpm": {
