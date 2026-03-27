@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { http } from "./lib/http";
 import { sleep } from "./utils";
 
 // interface User {
@@ -60,10 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const token = localStorage.getItem("auth-token");
     if (token) {
-      fetch("/api/validate-token", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((response) => response.json())
+      http
+        .get("/api/validate-token")
+        .json<{ valid: boolean; user: string }>()
         .then((userData) => {
           if (userData.valid) {
             setUser(userData.user);

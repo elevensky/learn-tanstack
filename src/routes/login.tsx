@@ -13,6 +13,7 @@ import {
 } from "antd";
 
 import { useAuth } from "../auth";
+import { http } from "../lib/http";
 import { sleep } from "../utils";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -36,12 +37,7 @@ function normalizeCaptchaImage(rawBase64: string) {
 }
 
 async function fetchCaptcha() {
-  const response = await fetch(CAPTCHA_API, { method: "GET" });
-  if (!response.ok) {
-    throw new Error(`Captcha API error: ${response.status}`);
-  }
-
-  const data = (await response.json()) as CaptchaResponse;
+  const data = await http.get(CAPTCHA_API).json<CaptchaResponse>();
   const captchaId = data.captchaId ?? data.id ?? "";
   const imageBase64 = data.imageBase64 ?? data.base64 ?? data.image ?? "";
   if (!imageBase64) {
