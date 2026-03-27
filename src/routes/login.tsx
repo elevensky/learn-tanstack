@@ -1,15 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { redirect, useRouter, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Checkbox, Form, Input, Spin, Typography, message } from "antd";
 
 import { useAuth } from "../auth";
 import { http } from "../lib/http";
 import { sleep } from "../utils";
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-const fallback = "/app/dashboard" as const;
-const CAPTCHA_API = "auth/captcha/img";
+const fallback = "/app/dashboard";
 
 type CaptchaResponse = {
   id?: string;
@@ -25,7 +24,7 @@ function normalizeCaptchaImage(rawBase64: string) {
 }
 
 async function fetchCaptcha() {
-  const data = await http.get<CaptchaResponse>(CAPTCHA_API);
+  const data = await http.get<CaptchaResponse>("auth/captcha/img");
   const captchaId = data.id ?? "";
   const imageBase64 = data.img ?? "";
   if (!imageBase64) {
@@ -65,12 +64,17 @@ function LoginComponent() {
     remember?: boolean;
   }>();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [captchaImageSrc, setCaptchaImageSrc] = React.useState("");
-  const [captchaId, setCaptchaId] = React.useState("");
-  const [isCaptchaLoading, setIsCaptchaLoading] = React.useState(false);
-  const [captchaLoadError, setCaptchaLoadError] = React.useState("");
 
   const search = Route.useSearch();
+  const {
+    data: captchaData,
+    isFetching: isCaptchaLoading,
+    isError: isCaptchaError,
+    refetch: refetchCaptcha,
+  } = useQuery({
+    queryKey: ["login-captcha-img"],
+    queryFn: fetchCaptcha,
+  });
 
   const onFormSubmit = async (values: {
     username: string;
@@ -78,6 +82,7 @@ function LoginComponent() {
     captcha: string;
     remember?: boolean;
   }) => {
+    const captchaId = captchaData?.captchaId ?? "";
     if (!captchaId) {
       message.error("验证码未就绪，请先刷新验证码");
       return;
@@ -111,27 +116,9 @@ function LoginComponent() {
     }
   };
 
-  const reloadCaptcha = React.useCallback(async () => {
-    setIsCaptchaLoading(true);
-    setCaptchaLoadError("");
-    try {
-      const captchaData = await fetchCaptcha();
-      setCaptchaImageSrc(captchaData.imageSrc);
-      setCaptchaId(captchaData.captchaId);
-      form.setFieldValue("captcha", "");
-    } catch (error) {
-      console.error("Failed to load captcha:", error);
-      setCaptchaLoadError("验证码加载失败，请点击刷新");
-      setCaptchaImageSrc("");
-      setCaptchaId("");
-    } finally {
-      setIsCaptchaLoading(false);
-    }
-  }, [form]);
-
   React.useEffect(() => {
-    void reloadCaptcha();
-  }, [reloadCaptcha]);
+    form.setFieldValue("captcha", "");
+  }, [captchaData?.captchaId, form]);
 
   React.useEffect(() => {
     const html = document.documentElement;
@@ -223,22 +210,22 @@ function LoginComponent() {
                 />
                 <button
                   type="button"
-                  onClick={() => void reloadCaptcha()}
+                  onClick={() => void refetchCaptcha()}
                   disabled={isLoggingIn || isCaptchaLoading}
                   title="点击刷新验证码"
                   className="h-8 w-[100px] rounded border border-[#d1d5db] bg-white px-2 grid place-items-center disabled:cursor-not-allowed"
                 >
                   {isCaptchaLoading ? (
                     <Spin size="small" />
-                  ) : captchaImageSrc ? (
+                  ) : captchaData?.imageSrc ? (
                     <img
-                      src={captchaImageSrc}
+                      src={captchaData.imageSrc}
                       alt="图文验证码"
                       className="h-6 w-auto object-contain select-none"
                     />
                   ) : (
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      {captchaLoadError || "加载失败"}
+                      {isCaptchaError ? "加载失败" : "暂无验证码"}
                     </Typography.Text>
                   )}
                 </button>
