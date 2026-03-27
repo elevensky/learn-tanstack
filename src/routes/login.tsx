@@ -149,6 +149,14 @@ function LoginComponent() {
     void reloadCaptcha();
   }, [reloadCaptcha]);
 
+  React.useEffect(() => {
+    const html = document.documentElement;
+    html.classList.remove("dark");
+    html.classList.add("light");
+    html.setAttribute("data-theme", "light");
+    html.style.colorScheme = "light";
+  }, []);
+
   const isLoggingIn = isLoading || isSubmitting;
 
   return (
@@ -278,7 +286,12 @@ function LoginComponent() {
             </Form.Item>
 
             <Form.Item label=" " colon={false} style={{ marginBottom: 0 }}>
-              <Button type="primary" htmlType="submit" loading={isLoggingIn} className="min-w-24">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={isLoggingIn}
+                className="min-w-24"
+              >
                 登录
               </Button>
             </Form.Item>
