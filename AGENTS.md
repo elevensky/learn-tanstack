@@ -48,7 +48,8 @@ Auth context in `src/auth.tsx`:
 - Auth state passed to router via context
 - Access in routes via `context.auth`
 - `useAuth()` hook for component access
-- User persisted in localStorage
+- After successful login, `auth.login({ token, username })` stores `auth-token` and display name in localStorage
+- Logout clears stored user and token
 
 ### Router Context
 
@@ -64,14 +65,22 @@ Import paths use `#/*` alias (configured in `package.json` and `tsconfig.json`):
 import { foo } from '#/utils'
 ```
 
+### API layer
+
+Backend-facing functions live in `src/api/` (one file per domain is fine, e.g. `auth.ts`, `captcha.ts`).
+
+- Routes and components call `src/api/*` helpers instead of embedding `http` paths
+- Login flow: `postLogin` in `src/api/auth.ts` (POST `auth/login`); captcha: `getCaptchaImage` in `src/api/captcha.ts`; logout: `getLogout` (GET `account/logout`, Bearer token)
+
 ### HTTP Client
 
 HTTP requests are standardized on `ky` via `src/lib/http.ts`.
 
 - Use the shared `http` instance instead of calling `fetch` directly in routes/components
 - Built-in behaviors in the shared client:
-  - `prefixUrl` is `api`; request paths should NOT include leading `/` or `/api` prefix
+  - `prefixUrl` is resolved to `{origin}/api/` so requests always hit `/api/...` (not `/app/api/...` under nested routes); request paths should NOT include leading `/` or `api/` prefix
   - backend response envelope is `{ code, data, message }`
+  - HTTP status is typically `200` for JSON responses; business success is `code === 200` in the body; otherwise the client throws `Error` with `message` from the server
   - `http` methods return `data` by default; pass `{ origin: true }` to receive full envelope
   - timeout (`10000ms`)
   - retry policy for transient errors

@@ -1,41 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { redirect, useRouter, useRouterState } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Checkbox, Form, Input, Spin, Typography, message } from "antd";
 
+import { postLogin } from "#/api/auth";
+import { LOGIN_CAPTCHA_QUERY_KEY, getCaptchaImage } from "#/api/captcha";
 import { useAuth } from "../auth";
-import { http } from "../lib/http";
-import { sleep } from "../utils";
 
 const fallback = "/app/dashboard";
-
-type CaptchaResponse = {
-  id?: string;
-  img?: string;
-};
-
-function normalizeCaptchaImage(rawBase64: string) {
-  const trimmed = rawBase64.trim();
-  if (trimmed.startsWith("data:image/")) {
-    return trimmed;
-  }
-  return `data:image/png;base64,${trimmed}`;
-}
-
-async function fetchCaptcha() {
-  const data = await http.get<CaptchaResponse>("auth/captcha/img");
-  const captchaId = data.id ?? "";
-  const imageBase64 = data.img ?? "";
-  if (!imageBase64) {
-    throw new Error("Captcha image base64 is empty");
-  }
-
-  return {
-    captchaId,
-    imageSrc: normalizeCaptchaImage(imageBase64),
-  };
-}
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -55,15 +28,15 @@ export const Route = createFileRoute("/login")({
 function LoginComponent() {
   const auth = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isLoading = useRouterState({ select: (s) => s.isLoading });
   const navigate = Route.useNavigate();
   const [form] = Form.useForm<{
     username: string;
-    password?: string;
+    password: string;
     captcha: string;
     remember?: boolean;
   }>();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const search = Route.useSearch();
   const {
@@ -72,48 +45,47 @@ function LoginComponent() {
     isError: isCaptchaError,
     refetch: refetchCaptcha,
   } = useQuery({
-    queryKey: ["login-captcha-img"],
-    queryFn: fetchCaptcha,
+    queryKey: LOGIN_CAPTCHA_QUERY_KEY,
+    queryFn: getCaptchaImage,
   });
 
-  const onFormSubmit = async (values: {
+  const loginMutation = useMutation({
+    mutationFn: postLogin,
+    onSuccess: async (session) => {
+      queryClient.removeQueries({ queryKey: [...LOGIN_CAPTCHA_QUERY_KEY] });
+      await auth.login(session);
+      await router.invalidate();
+      message.success("登录成功");
+      if (search.redirect) {
+        window.location.href = search.redirect;
+        return;
+      }
+      await navigate({ to: fallback });
+    },
+    onError: (err: Error) => {
+      message.error(err.message || "登录失败");
+      void refetchCaptcha();
+    },
+  });
+
+  const onFormSubmit = (values: {
     username: string;
-    password?: string;
+    password: string;
     captcha: string;
     remember?: boolean;
   }) => {
     const captchaId = captchaData?.captchaId ?? "";
     if (!captchaId) {
-      message.error("验证码未就绪，请先刷新验证码");
+      message.error("验证码未就绪，请点击图片刷新");
       return;
     }
-
-    setIsSubmitting(true);
-    try {
-      // Demo 里 auth.login 只接收用户名，这里先完成验证码输入校验和 captchaId 携带准备。
-      // 后续可将 values.captcha + captchaId 一起提交到真实登录接口。
-      void values.captcha;
-      void captchaId;
-      await auth.login(values.username.trim());
-
-      await router.invalidate();
-
-      // This is just a hack being used to wait for the auth state to update
-      // in a real app, you'd want to use a more robust solution
-      await sleep(1);
-
-      if (search.redirect) {
-        window.location.href = search.redirect;
-        return;
-      }
-
-      await navigate({ to: fallback });
-    } catch (error) {
-      console.error("Error logging in: ", error);
-      message.error("登录失败，请稍后重试");
-    } finally {
-      setIsSubmitting(false);
-    }
+    void values.remember;
+    loginMutation.mutate({
+      username: values.username.trim(),
+      password: values.password,
+      captchaId,
+      verifyCode: values.captcha.trim(),
+    });
   };
 
   React.useEffect(() => {
@@ -128,7 +100,7 @@ function LoginComponent() {
     html.style.colorScheme = "light";
   }, []);
 
-  const isLoggingIn = isLoading || isSubmitting;
+  const isLoggingIn = isLoading || loginMutation.isPending;
 
   return (
     <div className="min-h-[calc(100vh-2rem)] grid place-items-center px-6 py-8 sm:px-10">
@@ -186,9 +158,13 @@ function LoginComponent() {
               <Input placeholder="请输入用户名" autoComplete="username" />
             </Form.Item>
 
-            <Form.Item name="password" label="密码">
+            <Form.Item
+              name="password"
+              label="密码"
+              rules={[{ required: true, message: "请输入密码" }]}
+            >
               <Input.Password
-                placeholder="请输入密码（示例中不校验）"
+                placeholder="请输入密码"
                 autoComplete="current-password"
               />
             </Form.Item>
@@ -210,7 +186,9 @@ function LoginComponent() {
                 />
                 <button
                   type="button"
-                  onClick={() => void refetchCaptcha()}
+                  onClick={() => {
+                    refetchCaptcha().catch(() => {});
+                  }}
                   disabled={isLoggingIn || isCaptchaLoading}
                   title="点击刷新验证码"
                   className="h-8 w-[100px] rounded border border-[#d1d5db] bg-white px-2 grid place-items-center disabled:cursor-not-allowed"

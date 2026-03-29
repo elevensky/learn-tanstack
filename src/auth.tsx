@@ -1,17 +1,18 @@
 import * as React from "react";
 
-import { http } from "./lib/http";
-import { sleep } from "./utils";
+import { getLogout, getValidateToken } from "#/api/auth";
 
-// interface User {
-//   id: string;
-//   username: string;
-//   email: string;
-// }
+const AUTH_USER_KEY = "tanstack.auth.user";
+const AUTH_TOKEN_KEY = "auth-token";
+
+export type LoginSessionPayload = {
+  token: string;
+  username: string;
+};
 
 export interface AuthContext {
   isAuthenticated: boolean;
-  login: (username: string) => Promise<void>;
+  login: (session: LoginSessionPayload) => Promise<void>;
   logout: () => Promise<void>;
   user: string | null;
 }
@@ -25,13 +26,11 @@ export const defaultAuthContext: AuthContext = {
 
 const AuthContext = React.createContext<AuthContext>(defaultAuthContext);
 
-const key = "tanstack.auth.user";
-
 function getStoredUser() {
   if (typeof window === "undefined") {
     return null;
   }
-  return localStorage.getItem(key);
+  return localStorage.getItem(AUTH_USER_KEY);
 }
 
 function setStoredUser(user: string | null) {
@@ -39,9 +38,9 @@ function setStoredUser(user: string | null) {
     return;
   }
   if (user) {
-    localStorage.setItem(key, user);
+    localStorage.setItem(AUTH_USER_KEY, user);
   } else {
-    localStorage.removeItem(key);
+    localStorage.removeItem(AUTH_USER_KEY);
   }
 }
 
@@ -59,22 +58,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const token = localStorage.getItem("auth-token");
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (token) {
-      http
-        .get<{ valid: boolean; user: string }>("validate-token")
+      getValidateToken()
         .then((userData) => {
           if (userData.valid) {
             setUser(userData.user);
             setIsAuthenticated(true);
           } else {
-            localStorage.removeItem("auth-token");
+            localStorage.removeItem(AUTH_TOKEN_KEY);
             setUser(null);
             setIsAuthenticated(false);
           }
         })
         .catch(() => {
-          localStorage.removeItem("auth-token");
+          localStorage.removeItem(AUTH_TOKEN_KEY);
           setUser(null);
           setIsAuthenticated(false);
         })
@@ -87,18 +85,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = React.useCallback(async () => {
-    await sleep(250);
-
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem(AUTH_TOKEN_KEY)
+        : null;
+    if (token) {
+      try {
+        await getLogout();
+      } catch {
+        // 接口失败仍清理本地态，避免前端卡在已登录状态
+      }
+    }
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+    }
     setStoredUser(null);
     setUser(null);
     setIsAuthenticated(false);
   }, []);
 
-  const login = React.useCallback(async (username: string) => {
-    await sleep(500);
-
-    setStoredUser(username);
-    setUser(username);
+  const login = React.useCallback(async (session: LoginSessionPayload) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(AUTH_TOKEN_KEY, session.token);
+    }
+    setStoredUser(session.username);
+    setUser(session.username);
     setIsAuthenticated(true);
   }, []);
 

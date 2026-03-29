@@ -4,9 +4,10 @@ import {
   createFileRoute,
   useRouter,
 } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header";
-import { useAuth } from "../../../auth";
+import { useAuth } from "#/auth";
 
 export const Route = createFileRoute("/_auth/app")({
   component: AppLayoutComponent,
@@ -16,15 +17,14 @@ function AppLayoutComponent() {
   const router = useRouter();
   const navigate = Route.useNavigate();
   const auth = useAuth();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      auth.logout().then(() => {
-        router.invalidate().finally(() => {
-          navigate({ to: "/" });
-        });
-      });
-    }
+    void auth.logout().then(async () => {
+      queryClient.clear();
+      await router.invalidate();
+      await navigate({ to: "/" });
+    });
   };
 
   return (
